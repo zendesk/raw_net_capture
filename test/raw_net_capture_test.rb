@@ -31,7 +31,7 @@ class RawNetCaptureTest < MiniTest::Test
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
       http.set_debug_output capture
-      response = http.get(uri.request_uri)
+      http.get(uri.request_uri)
 
       assert_match(/\AGET \/ HTTP\/1.1.*Host: www.google.com.*\z/m, capture.raw_sent.string)
       assert_match(/\AHTTP\/1.1 200 OK.*\z/m, capture.raw_received.string)

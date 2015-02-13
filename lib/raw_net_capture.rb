@@ -22,8 +22,6 @@ class RawNetCapture < StringIO
 end
 
 class RawHTTPCapture < StringIO
-  attr_reader :raw_received, :raw_sent
-
   def initialize
     super
     reset
@@ -32,6 +30,14 @@ class RawHTTPCapture < StringIO
   def reset
     @raw_received = StringIO.new
     @raw_sent = StringIO.new
+  end
+
+  def raw_sent
+    @raw_sent
+  end
+
+  def raw_received
+    @raw_received
   end
 
   def received(data)
@@ -45,6 +51,7 @@ class RawHTTPCapture < StringIO
   def headers
     separator = "\r\n\r\n"
     raw_string = @raw_received.string
+
     if headers_end_index = raw_string.index(separator)
       raw_string[0...(headers_end_index + separator.length)]
     else
@@ -58,22 +65,21 @@ module Net
     private
 
     def rbuf_consume(len)
-      s = @rbuf.slice!(0, len)
-      if @debug_output
-        @debug_output << %Q[-> #{s.dump}\n]
-        @debug_output.received(s) if @debug_output.respond_to?(:received)
+      @rbuf.slice!(0, len).tap do |string|
+        if @debug_output
+          @debug_output << %Q[-> #{string.dump}\n]
+          @debug_output.received(string +  "\r\n\r\n") if @debug_output.respond_to?(:received)
+        end
       end
-      s
     end
 
     def write0(str)
       if @debug_output
         @debug_output << str.dump
-        @debug_output.sent(str) if @debug_output.respond_to?(:sent)
+        @debug_output.sent(str + "\r\n\r\n") if @debug_output.respond_to?(:sent)
       end
-      len = @io.write(str)
-      @written_bytes += len
-      len
+
+      @io.write(str).tap { |len| @written_bytes += len }
     end
   end
 end
