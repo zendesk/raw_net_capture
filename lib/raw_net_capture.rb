@@ -68,7 +68,7 @@ module Net
       @rbuf.slice!(0, len).tap do |string|
         if @debug_output
           @debug_output << %Q[-> #{string.dump}\n]
-          @debug_output.received(string +  "\r\n\r\n") if @debug_output.respond_to?(:received)
+          @debug_output.received(string) if @debug_output.respond_to?(:received)
         end
       end
     end
@@ -76,10 +76,21 @@ module Net
     def write0(str)
       if @debug_output
         @debug_output << str.dump
-        @debug_output.sent(str + "\r\n\r\n") if @debug_output.respond_to?(:sent)
+        @debug_output.sent(str) if @debug_output.respond_to?(:sent)
       end
 
       @io.write(str).tap { |len| @written_bytes += len }
+    end
+  end
+
+  class HTTPGenericRequest
+    def flush_buffer(out, buf, chunked_p)
+      return unless buf
+      out << "%x\r\n"%buf.bytesize if chunked_p
+      out << buf
+      out << "\r\n" if chunked_p
+      out << "\r\n\r\n"
+      buf.clear
     end
   end
 end
