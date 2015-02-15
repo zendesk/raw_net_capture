@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class RawNetCapture < StringIO
-  attr_reader :raw_traffic
+  attr_reader :transactions
 
   def initialize
     super
@@ -9,15 +9,21 @@ class RawNetCapture < StringIO
   end
 
   def received(data)
-    @raw_traffic << [:received, data]
+    @transactions[@transaction_index] << [:received, data]
   end
 
   def sent(data)
-    @raw_traffic << [:sent, data]
+    if @transactions[@transaction_index].last && (@transactions[@transaction_index].last[0] == :received)
+      @transaction_index += 1
+      @transactions[@transaction_index] = []
+    end
+
+    @transactions[@transaction_index] << [:sent, data]
   end
 
   def reset
-    @raw_traffic = []
+    @transaction_index = 0
+    @transactions = [[]]
   end
 end
 
