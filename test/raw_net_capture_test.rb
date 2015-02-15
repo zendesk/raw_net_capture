@@ -9,8 +9,9 @@ class RawNetCaptureTest < MiniTest::Test
     before do
       capture = RawNetCapture.new
 
-      uri = URI.parse("http://www.google.com/")
+      uri = URI.parse("https://www.google.com/")
       http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
       http.set_debug_output capture
       http.get(uri.request_uri)
 
@@ -34,7 +35,6 @@ class RawNetCaptureTest < MiniTest::Test
         http.use_ssl = true
         http.set_debug_output @capture
         http.get(uri.request_uri)
-
       end
 
       it "captures raw HTTP request and response" do
