@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class RawNetCapture < StringIO
-  attr_reader :raw_traffic
+  attr_reader :transactions
 
   def initialize
     super
@@ -9,47 +9,62 @@ class RawNetCapture < StringIO
   end
 
   def received(data)
-    @raw_traffic << [:received, data]
+    @transactions.last << [:received, data]
   end
 
   def sent(data)
-    @raw_traffic << [:sent, data]
+    if @transactions.last.last && (@transactions.last.last[0] == :received)
+      @transactions << []
+    end
+
+    @transactions.last << [:sent, data]
   end
 
   def reset
-    @raw_traffic = []
+    @transactions = [[]]
   end
 end
 
 class RawHTTPCapture < StringIO
-  attr_reader :raw_received, :raw_sent
+  attr_reader :transactions
 
-  def initialize
-    super
-    reset
-  end
-
-  def reset
-    @raw_received = StringIO.new
-    @raw_sent = StringIO.new
-  end
-
-  def received(data)
-    @raw_received << data
-  end
-
-  def sent(data)
-    @raw_sent << data
-  end
-
-  def headers
+  def self.headers(transaction)
     separator = "\r\n\r\n"
-    raw_string = @raw_received.string
+    raw_string = transaction[:received].string
     if headers_end_index = raw_string.index(separator)
       raw_string[0...(headers_end_index + separator.length)]
     else
       raw_string
     end
+  end
+
+  def initialize
+    super
+    reset
+  end
+
+  def reset
+    @transactions = [{
+      :received => StringIO.new,
+      :sent => StringIO.new
+    }]
+  end
+
+  def received(data)
+    @getting_response = true
+    transactions.last[:received] << data
+  end
+
+  def sent(data)
+    if @getting_response
+      @getting_response = false
+      @transactions << {
+        :received => StringIO.new,
+        :sent => StringIO.new
+      }
+    end
+
+    transactions.last[:sent] << data
   end
 end
 
