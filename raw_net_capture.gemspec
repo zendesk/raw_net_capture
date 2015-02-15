@@ -7,7 +7,6 @@ Gem::Specification.new "raw_net_capture", '1.1.0' do |gem|
   gem.license       = "Apache License Version 2.0"
   gem.files         = `git ls-files lib`.split($\)
   gem.add_development_dependency('appraisal')
-  gem.add_development_dependency('byebug')
   gem.add_development_dependency('rake')
   gem.add_development_dependency('bundler')
 end
