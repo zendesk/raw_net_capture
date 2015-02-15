@@ -14,10 +14,9 @@ class RawNetCaptureTest < MiniTest::Test
       http.set_debug_output capture
       response = http.get(uri.request_uri)
 
-      raw_sent = capture.raw_traffic.select { |x| x[0] == :sent }.map { |x| x[1] }.join
-      raw_received = capture.raw_traffic.select { |x| x[0] == :received }.map { |x| x[1] }.join
+      raw_sent = capture.transactions.first.select { |x| x[0] == :sent }.map { |x| x[1] }.join
+      raw_received = capture.transactions.first.select { |x| x[0] == :received }.map { |x| x[1] }.join
 
-      debugger
 
       assert_match(/\AGET \/ HTTP\/1.1.*Host: www.google.com.*\z/m, raw_sent)
       assert_match(/\AHTTP\/1.1 200 OK.*\z/m, raw_received)
