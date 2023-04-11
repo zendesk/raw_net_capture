@@ -1,4 +1,4 @@
-Gem::Specification.new "raw_net_capture", '2.1.0' do |gem|
+Gem::Specification.new "raw_net_capture", '2.1.2' do |gem|
   gem.authors       = ["Gary Grossman", "Victor Kmita"]
   gem.email         = ["ggrossman@zendesk.com", "vkmita@zendesk.com"]
   gem.description   = "Adds raw capture capability to Ruby's net debug_output"
